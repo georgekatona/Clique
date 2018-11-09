@@ -7,9 +7,14 @@ import scipy.sparse.csgraph
 from Cluster import Cluster
 from sklearn import metrics
 
+
 # Inserts joined item into candidates list only if its dimensionality fits
 def insert_if_join_condition(candidates, item, item2, current_dim):
-    joined = item + item2
+    joined = []
+    for i in range(len(item)):
+        joined.append(item[i])
+    for i in range(len(item2)):
+        joined.append(item2[i])
 
     # Count number of dimensions
     dims = set()
@@ -51,7 +56,6 @@ def is_data_in_projection(tuple, candidate, xsi):
 def get_dense_units_for_dim(data, prev_dim_dense_units, dim, xsi, tau):
     candidates = self_join(prev_dim_dense_units, dim)
     prune(candidates, prev_dim_dense_units)
-    print("candidates: ", candidates)
 
     # Count number of elements in candidates
     projection = np.zeros(len(candidates))
@@ -61,6 +65,8 @@ def get_dense_units_for_dim(data, prev_dim_dense_units, dim, xsi, tau):
             if is_data_in_projection(data[dataIndex], candidates[i], xsi):
                 projection[i] += 1
     print("projection: ", projection)
+
+    # Return elements above density threshold
     is_dense = projection > tau * number_of_data_points
     print("is_dense: ", is_dense)
     return np.array(candidates)[is_dense]
@@ -107,7 +113,6 @@ def get_cluster_data_point_ids(data, cluster_dense_units, xsi):
             tmp_ids = tmp_ids & set(np.where(np.floor(data[:, feature_index] * xsi % xsi) == range_index)[0])
         point_ids = point_ids | tmp_ids
 
-    print(point_ids)
     return point_ids
 
 
@@ -184,15 +189,15 @@ def evaluate_clustering_performance(clusters, labels):
         print(metrics.adjusted_rand_score(labels, clustering_labels))
 
 
-def run_clique(file_name, feature_columns, label_column, xsi, tau, output_file="clusters.txt"):
+def run_clique(file_name, feature_columns, label_column, xsi, tau, delimiter, output_file="clusters.txt"):
     print("Running CLIQUE algorithm on " + file_name + " dataset, feature columns = " +
           str(feature_columns) + ", label column = " + str(label_column) + ", xsi = " +
           str(xsi) + ", tau = " + str(tau) + "\n")
 
     # Read in data with labels
     path = os.path.join(os.path.abspath(os.path.dirname(__file__)), file_name)
-    original_data = np.genfromtxt(path, dtype=float, delimiter=' ', usecols=feature_columns)
-    labels = np.genfromtxt(path, dtype="U10", delimiter=' ', usecols=[label_column])
+    original_data = np.genfromtxt(path, dtype=float, delimiter=delimiter, usecols=feature_columns)
+    labels = np.genfromtxt(path, dtype="U10", delimiter=delimiter, usecols=[label_column])
 
     # Normalize each dimension to the [0,1] range
     data = normalize_features(original_data)
@@ -206,7 +211,7 @@ def run_clique(file_name, feature_columns, label_column, xsi, tau, output_file="
     # Finding dense units and clusters for dimension > 2
     current_dim = 2
     number_of_features = np.shape(data)[1]
-    while current_dim <= number_of_features & len(dense_units) > 0:
+    while (current_dim <= number_of_features) & (len(dense_units) > 0):
         print("\n", str(current_dim), " dimensional clusters:")
         dense_units = get_dense_units_for_dim(data, dense_units, current_dim, xsi, tau)
         for cluster in get_clusters(dense_units, data, xsi):
@@ -222,13 +227,14 @@ def run_clique(file_name, feature_columns, label_column, xsi, tau, output_file="
 if __name__ == "__main__":
     # Sample run: python Clique.py mouse.csv [0,1] 2 3 0.3
 
-    if len(sys.argv) > 5:
+    if len(sys.argv) > 7:
         run_clique(file_name=sys.argv[1], feature_columns=map(int, sys.argv[2].strip('[]').split(',')),
-                   label_column=int(sys.argv[3]), xsi=int(sys.argv[4]), tau=float(sys.argv[5]),
-                   output_file=sys.argv[5])
-    elif len(sys.argv) > 4:
+                   label_column=int(sys.argv[3]), xsi=int(sys.argv[4]), tau=float(sys.argv[5]), delimiter=sys.argv[6],
+                   output_file=sys.argv[7])
+    elif len(sys.argv) > 6:
         run_clique(file_name=sys.argv[1], feature_columns=map(int, sys.argv[2].strip('[]').split(',')),
-                   label_column=int(sys.argv[3]), xsi=int(sys.argv[4]), tau=float(sys.argv[5]))
+                   label_column=int(sys.argv[3]), xsi=int(sys.argv[4]), tau=float(sys.argv[5]), delimiter=sys.argv[6])
     else:
         # Running with default parameters and data set
-        run_clique("mouse.csv", [0, 1], 2, 3, 0.1)
+        # run_clique("mouse.csv", [0, 1], 2, 3, 0.1, ' ')
+        run_clique("data_banknote_authentication.txt", [0, 1, 2, 3], 4, 2, 0, ",", "bank.txt")
