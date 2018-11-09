@@ -186,6 +186,7 @@ def evaluate_clustering_performance(clusters, labels):
         for i, c in enumerate(clusters_in_dim):
             clustering_labels[list(c.data_point_ids)] = i + 1
 
+        print("Number of clusters: ", len(clusters_in_dim))
         print(metrics.adjusted_rand_score(labels, clustering_labels))
 
 
@@ -237,4 +238,4 @@ if __name__ == "__main__":
     else:
         # Running with default parameters and data set
         # run_clique("mouse.csv", [0, 1], 2, 3, 0.1, ' ')
-        run_clique("data_banknote_authentication.txt", [0, 1, 2, 3], 4, 2, 0, ",", "bank.txt")
+        run_clique("data_banknote_authentication.txt", [0, 1, 2, 3], 4, 2, 0.05, ",", "bank.txt")
