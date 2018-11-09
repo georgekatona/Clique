@@ -85,18 +85,22 @@ def get_graph_from_dense_units(denseUnits):
     return graph
 
 
-# Read in Data with labels (data is normalized, each dimension is in the [0,1] range.
+# Read in Data with labels
 path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "mouse.csv")
 X = np.genfromtxt(path, dtype=float, delimiter=' ', usecols=[0, 1])
 y = np.genfromtxt(path, dtype="U10", delimiter=' ', usecols=[2])
 
+# Normalize each dimension to the [0,1] range
+numberOfFeatures = np.shape(X)[1]
+dataSize = np.shape(X)[0]
+
+for f in range(numberOfFeatures):
+    X[:, f] -= min(X[:, f])
+    X[:, f] *= 1 / max(X[:, f])
+
 # Inputs of the algorithm
 xsi = 3
 tau = .3
-
-# 1. Identify Subspaces
-numberOfFeatures = np.shape(X)[1]
-dataSize = np.shape(X)[0]
 
 # Finding 1 dimensional dense units
 projection = np.zeros((xsi, numberOfFeatures))
