@@ -5,7 +5,7 @@ import numpy as np
 import scipy.sparse.csgraph
 
 from Cluster import Cluster
-
+from sklearn import metrics
 
 # Inserts joined item into candidates list only if its dimensionality fits
 def insert_if_join_condition(candidates, item, item2, current_dim):
@@ -94,22 +94,21 @@ def save_to_file(clusters, file_name):
     file.close()
 
 
-def get_cluster_data_points(data, cluster_dense_units, xsi):
-    cluster_points = []
+def get_cluster_data_point_ids(data, cluster_dense_units, xsi):
+    point_ids = set()
 
     # Loop through all dense unit
     for i in range(np.shape(cluster_dense_units)[0]):
-        tmp_points = data
+        tmp_ids = set(range(np.shape(data)[0]))
         # Loop through all dimensions of dense unit
         for j in range(np.shape(cluster_dense_units)[1]):
             feature_index = cluster_dense_units[i][j][0]
             range_index = cluster_dense_units[i][j][1]
-            tmp_points = tmp_points[np.where(np.floor(tmp_points[:, feature_index] * xsi % xsi) == range_index)]
-        print(tmp_points)
-        for element in tmp_points:
-            cluster_points.append(element)
+            tmp_ids = tmp_ids & set(np.where(np.floor(data[:, feature_index] * xsi % xsi) == range_index)[0])
+        point_ids = point_ids | tmp_ids
 
-    return np.array(cluster_points)
+    print(point_ids)
+    return point_ids
 
 
 def get_clusters(dense_units, data, xsi):
@@ -131,9 +130,9 @@ def get_clusters(dense_units, data, xsi):
                 dimensions.add(cluster_dense_units[j][k][0])
 
         # Get points of the cluster
-        cluster_data_points = get_cluster_data_points(data, cluster_dense_units, xsi)
+        cluster_data_point_ids = get_cluster_data_point_ids(data, cluster_dense_units, xsi)
         # Add cluster to list
-        clusters.append(Cluster(cluster_dense_units, dimensions, cluster_data_points))
+        clusters.append(Cluster(cluster_dense_units, dimensions, cluster_data_point_ids))
 
     return clusters
 
@@ -157,10 +156,32 @@ def get_one_dim_dense_units(data, tau, xsi):
 
 
 def normalize_features(data):
-    number_of_features = np.shape(data)[1]
+    normalized_data = data
+    number_of_features = np.shape(normalized_data)[1]
     for f in range(number_of_features):
-        data[:, f] -= min(data[:, f])
-        data[:, f] *= 1 / max(data[:, f])
+        normalized_data[:, f] -= min(normalized_data[:, f])
+        normalized_data[:, f] *= 1 / max(normalized_data[:, f])
+    return normalized_data
+
+
+def evaluate_clustering_performance(clusters, labels):
+    set_of_dimensionality = set()
+    for cluster in clusters:
+        set_of_dimensionality.add(frozenset(cluster.dimensions))
+
+    # Evaluating performance in all dimensionality
+    for dim in set_of_dimensionality:
+        print("Evaluating clusters in dimension: ", list(dim))
+        # Finding clusters with same dimensions
+        clusters_in_dim = []
+        for c in clusters:
+            if c.dimensions == dim:
+                clusters_in_dim.append(c)
+        clustering_labels = np.zeros(np.shape(labels))
+        for i, c in enumerate(clusters_in_dim):
+            clustering_labels[list(c.data_point_ids)] = i + 1
+
+        print(metrics.adjusted_rand_score(labels, clustering_labels))
 
 
 def run_clique(file_name, feature_columns, label_column, xsi, tau, output_file="clusters.txt"):
@@ -170,11 +191,11 @@ def run_clique(file_name, feature_columns, label_column, xsi, tau, output_file="
 
     # Read in data with labels
     path = os.path.join(os.path.abspath(os.path.dirname(__file__)), file_name)
-    data = np.genfromtxt(path, dtype=float, delimiter=' ', usecols=feature_columns)
-    y = np.genfromtxt(path, dtype="U10", delimiter=' ', usecols=[label_column])
+    original_data = np.genfromtxt(path, dtype=float, delimiter=' ', usecols=feature_columns)
+    labels = np.genfromtxt(path, dtype="U10", delimiter=' ', usecols=[label_column])
 
     # Normalize each dimension to the [0,1] range
-    normalize_features(data)
+    data = normalize_features(original_data)
 
     # Finding 1 dimensional dense units
     dense_units = get_one_dim_dense_units(data, tau, xsi)
@@ -193,7 +214,9 @@ def run_clique(file_name, feature_columns, label_column, xsi, tau, output_file="
         current_dim += 1
 
     save_to_file(clusters, output_file)
-    print("\nClusters exported to " + output_file)
+    print("\nClusters exported to " + output_file + "\n")
+
+    evaluate_clustering_performance(clusters, labels)
 
 
 if __name__ == "__main__":
