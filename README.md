@@ -77,7 +77,7 @@ Running the script without parameters runs a default clustering on one of datase
 `python Clique.py mouse.csv [0,1] 2 3 0.3 " " output_clusters.txt`
 
 - mouse.csv             - file name of the csv dataset provided in the same directory
--[0,1]                  - numerical data columns of the dataset
+- [0,1]                 - numerical data columns of the dataset
 - 2                     - true labels of the clusters
 - 3                     - xsi parameter for CLIQUE
 - 0.3                   - tau parameter for CLIQUE
