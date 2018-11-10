@@ -84,5 +84,31 @@ Running the script without parameters runs a default clustering on one of datase
 - " "                   - separator used in csv
 - output_clusters.txt   - [optional] output file name (default = clusters.txt)
 
+# Evaluating results
+
+### Scikit-learn
+
+Running Clique.py automatically evaluates clustering in all subspaces containing clusters using scikit-learn package. In all used evaluation methods higher means better performance. Detailed description of evaluation scores is not in scope of this document, for further information please visit scikit-learn documentation.
+
+Bounds of each evaluation methods:
+- Adjusted Rand index: [-1,1]
+- Mutual Information: upper bound of 1
+- Homogeneity: [0,1]
+- completeness: [0,1]
+- V-measure: [0,1]
+- Fowlkes-Mallows: [0,1]
+
+
+The output of the evaluation has the following format:
+
+```
+Evaluating clusters in dimension:  [0, 1]
+Number of clusters:  3
+Adjusted Rand index:  0.5902342864120859
+Mutual Information:  0.6631758799103057
+Homogeneity, completeness, V-measure:  (0.8747287335267985, 0.6655191190040727, 0.7559156081896049)
+Fowlkes-Mallows:  0.7412482467784445
+```
+
 
 [CLIQUE]:https://www.cs.cornell.edu/johannes/papers/1998/sigmod1998-clique.pdf
