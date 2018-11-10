@@ -88,7 +88,7 @@ Running the script without parameters runs a default clustering on one of datase
 
 ### Scikit-learn
 
-Running Clique.py automatically evaluates clustering in all subspaces containing clusters using scikit-learn package. In all used evaluation methods higher means better performance. Detailed description of evaluation scores is not in scope of this document, for further information please visit scikit-learn documentation.
+Running Clique.py automatically evaluates clustering in all subspaces containing clusters using scikit-learn package. In all used evaluation methods higher means better performance. Detailed description of evaluation scores is not in scope of this document, for further information please visit [scikit-learn documentation].
 
 Bounds of each evaluation methods:
 - Adjusted Rand index: [-1,1]
@@ -112,3 +112,4 @@ Fowlkes-Mallows:  0.7412482467784445
 
 
 [CLIQUE]:https://www.cs.cornell.edu/johannes/papers/1998/sigmod1998-clique.pdf
+[scikit-learn documentation]:https://scikit-learn.org/stable/modules/clustering.html#clustering-performance-evaluation
