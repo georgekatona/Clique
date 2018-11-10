@@ -4,6 +4,9 @@
 
 In the context of the algorithm, clusters are dense regions. It partitions the feature space into xsi equal parts in each dimension, where the intersection of one interval from each dimension is called unit. If a unit contains more than tau parts of all the data points, then it is a dense unit. Clusters are the maximal sets of connected dense units. For example in Figure 1, dense region A and dense region B are connected, therefore A U B is a cluster.
 
+![figure_1](pic/figure_1.png)
+Figure 1: Dense units in feature space
+
 ### Strengths
 CLIQUE is used not only to detect clusters but to identify subspaces which contain clusters at the same time. It is a fast and uses a relatively simple approach of finding clusters. It was introduced in 1998 motivated by finding an automatic subspace algorithm without requiring the user to guess subspaces which might contain interesting clusters.
 
@@ -32,7 +35,7 @@ clique(data, xsi, tau){
         
         # Finding k > 1 dimensional dense units
         Dk = Ck[have all (k-1) projection in D(k-1)]
-    }
+í    }
 
     # Finding clusters
     for(all feature set f={F1,F2,...,Fk} containing dense units){
