@@ -1,6 +1,6 @@
-# [CLIQUE]
+# CLIQUE
 
-CLIQUE is a subspace clustering algorithm using a bottom up approach to find all clusters in all subspaces. It starts examining one dimensional subspaces and merges them to compute higher dimensional ones. It uses the downward-closure property to achieve better performance by considering subspaces only if all of its k-1 dimensional projection contains cluster(s).
+[CLIQUE] is a subspace clustering algorithm using a bottom up approach to find all clusters in all subspaces. It starts examining one dimensional subspaces and merges them to compute higher dimensional ones. It uses the downward-closure property to achieve better performance by considering subspaces only if all of its k-1 dimensional projection contains cluster(s).
 
 In the context of the algorithm, clusters are dense regions. It partitions the feature space into xsi equal parts in each dimension, where the intersection of one interval from each dimension is called unit. If a unit contains more than tau parts of all the data points, then it is a dense unit. Clusters are the maximal sets of connected dense units. For example in Figure 1, dense region A and dense region B are connected, therefore A U B is a cluster.
 
