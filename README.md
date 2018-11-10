@@ -13,10 +13,8 @@ The quality of the results are highly dependent of the input parameters xsi and 
 
 # Pseudocode
 
-Finding subspace containing cluster
-
 ```
-clique(data, xsi, tau):
+clique(data, xsi, tau){
 
     data_size = get_length(data)
     number_of_features = get_width(data)
@@ -49,6 +47,7 @@ clique(data, xsi, tau):
         G[i,j] = 0
         clusters = get_connected_components(G)
     }
+}
 ```
 # Implementation
 
