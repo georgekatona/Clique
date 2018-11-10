@@ -8,8 +8,7 @@ In the context of the algorithm, clusters are dense regions. It partitions the f
 <p align="center">
 
   <img src="pic/figure_1.png"/>
-  
-  <p>Figure 1: Dense units in feature space</p>
+  <a>Figure 1: Dense units in feature space</a>
   
 </p>
 
