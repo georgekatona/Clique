@@ -5,6 +5,7 @@
 In the context of the algorithm, clusters are dense regions. It partitions the feature space into xsi equal parts in each dimension, where the intersection of one interval from each dimension is called unit. If a unit contains more than tau parts of all the data points, then it is a dense unit. Clusters are the maximal sets of connected dense units. For example in Figure 1, dense region A and dense region B are connected, therefore A U B is a cluster.
 
 ![figure_1](pic/figure_1.png)
+
 Figure 1: Dense units in feature space
 
 ### Strengths
