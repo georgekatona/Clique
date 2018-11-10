@@ -1,4 +1,4 @@
-# CLIQUE algorithm
+# [CLIQUE]
 
 CLIQUE is a subspace clustering algorithm using a bottom up approach to find all clusters in all subspaces. It starts examining one dimensional subspaces and merges them to compute higher dimensional ones. It uses the downward-closure property to achieve better performance by considering subspaces only if all of its k-1 dimensional projection contains cluster(s).
 
@@ -86,3 +86,4 @@ Running the script without parameters runs a default clustering on one of datase
 - output_clusters.txt   - [optional] output file name (default = clusters.txt)
 
 
+[CLIQUE]:https://www.cs.cornell.edu/johannes/papers/1998/sigmod1998-clique.pdf
