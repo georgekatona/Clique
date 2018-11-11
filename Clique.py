@@ -176,7 +176,7 @@ def evaluate_clustering_performance(clusters, labels):
 
     # Evaluating performance in all dimensionality
     for dim in set_of_dimensionality:
-        print("Evaluating clusters in dimension: ", list(dim))
+        print("\nEvaluating clusters in dimension: ", list(dim))
         # Finding clusters with same dimensions
         clusters_in_dim = []
         for c in clusters:
@@ -187,7 +187,13 @@ def evaluate_clustering_performance(clusters, labels):
             clustering_labels[list(c.data_point_ids)] = i + 1
 
         print("Number of clusters: ", len(clusters_in_dim))
-        print(metrics.adjusted_rand_score(labels, clustering_labels))
+        print("Adjusted Rand index: ", metrics.adjusted_rand_score(labels, clustering_labels))
+        print("Mutual Information: ", metrics.adjusted_mutual_info_score(labels, clustering_labels))
+
+        print("Homogeneity, completeness, V-measure: ",
+              metrics.homogeneity_completeness_v_measure(labels, clustering_labels))
+
+        print("Fowlkes-Mallows: ", metrics.fowlkes_mallows_score(labels, clustering_labels))
 
 
 def run_clique(file_name, feature_columns, label_column, xsi, tau, delimiter, output_file="clusters.txt"):
@@ -220,13 +226,13 @@ def run_clique(file_name, feature_columns, label_column, xsi, tau, delimiter, ou
         current_dim += 1
 
     save_to_file(clusters, output_file)
-    print("\nClusters exported to " + output_file + "\n")
+    print("\nClusters exported to " + output_file)
 
     evaluate_clustering_performance(clusters, labels)
 
 
 if __name__ == "__main__":
-    # Sample run: python Clique.py mouse.csv [0,1] 2 3 0.3
+    # Sample run: python Clique.py mouse.csv [0,1] 2 3 0.3 " " output_clusters.txt
 
     if len(sys.argv) > 7:
         run_clique(file_name=sys.argv[1], feature_columns=map(int, sys.argv[2].strip('[]').split(',')),
@@ -237,5 +243,5 @@ if __name__ == "__main__":
                    label_column=int(sys.argv[3]), xsi=int(sys.argv[4]), tau=float(sys.argv[5]), delimiter=sys.argv[6])
     else:
         # Running with default parameters and data set
-        # run_clique("mouse.csv", [0, 1], 2, 3, 0.1, ' ')
-        run_clique("data_banknote_authentication.txt", [0, 1, 2, 3], 4, 2, 0.05, ",", "bank.txt")
+        run_clique("mouse.csv", [0, 1], 2, 3, 0.1, ' ')
+        # run_clique("data_banknote_authentication.txt", [0, 1, 2, 3], 4, 5, 0.1, ",", "bank.txt")
