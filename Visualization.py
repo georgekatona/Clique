@@ -57,7 +57,7 @@ def plot_clusters(data, clusters, title, xsi):
                 x = data[c_elems, c_attrs[0]]
                 y = data[c_elems, c_attrs[1]]
             ax.scatter(x, y, s=plt_marker_size, c=[
-                plt_cmap(i)], label=str(i))
+                plt_cmap(c.id)], label=str(c.id))
 
         ax.set_xlim(data_extent[0][0] - plt_spacing,
                     data_extent[0][1] + plt_spacing)

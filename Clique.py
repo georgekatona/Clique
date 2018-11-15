@@ -6,6 +6,7 @@ import scipy.sparse.csgraph
 
 from Cluster import Cluster
 from sklearn import metrics
+from ast import literal_eval
 
 from Visualization import plot_clusters
 
@@ -41,7 +42,8 @@ def self_join(prev_dim_dense_units, dim):
     candidates = []
     for i in range(len(prev_dim_dense_units)):
         for j in range(i + 1, len(prev_dim_dense_units)):
-            insert_if_join_condition(candidates, prev_dim_dense_units[i], prev_dim_dense_units[j], dim)
+            insert_if_join_condition(
+                candidates, prev_dim_dense_units[i], prev_dim_dense_units[j], dim)
     return candidates
 
 
@@ -94,8 +96,10 @@ def get_edge(node1, node2):
 
 
 def save_to_file(clusters, file_name):
-    file = open(os.path.join(os.path.abspath(os.path.dirname(__file__)), file_name), encoding='utf-8', mode="w+")
+    file = open(os.path.join(os.path.abspath(os.path.dirname(
+        __file__)), file_name), encoding='utf-8', mode="w+")
     for i, c in enumerate(clusters):
+        c.id = i
         file.write("Cluster " + str(i) + ":\n" + str(c))
     file.close()
 
@@ -110,7 +114,8 @@ def get_cluster_data_point_ids(data, cluster_dense_units, xsi):
         for j in range(np.shape(cluster_dense_units)[1]):
             feature_index = cluster_dense_units[i][j][0]
             range_index = cluster_dense_units[i][j][1]
-            tmp_ids = tmp_ids & set(np.where(np.floor(data[:, feature_index] * xsi % xsi) == range_index)[0])
+            tmp_ids = tmp_ids & set(
+                np.where(np.floor(data[:, feature_index] * xsi % xsi) == range_index)[0])
         point_ids = point_ids | tmp_ids
 
     return point_ids
@@ -118,7 +123,8 @@ def get_cluster_data_point_ids(data, cluster_dense_units, xsi):
 
 def get_clusters(dense_units, data, xsi):
     graph = build_graph_from_dense_units(dense_units)
-    number_of_components, component_list = scipy.sparse.csgraph.connected_components(graph, directed=False)
+    number_of_components, component_list = scipy.sparse.csgraph.connected_components(
+        graph, directed=False)
 
     dense_units = np.array(dense_units)
     clusters = []
@@ -135,9 +141,11 @@ def get_clusters(dense_units, data, xsi):
                 dimensions.add(cluster_dense_units[j][k][0])
 
         # Get points of the cluster
-        cluster_data_point_ids = get_cluster_data_point_ids(data, cluster_dense_units, xsi)
+        cluster_data_point_ids = get_cluster_data_point_ids(
+            data, cluster_dense_units, xsi)
         # Add cluster to list
-        clusters.append(Cluster(cluster_dense_units, dimensions, cluster_data_point_ids))
+        clusters.append(Cluster(cluster_dense_units,
+                                dimensions, cluster_data_point_ids))
 
     return clusters
 
@@ -188,13 +196,16 @@ def evaluate_clustering_performance(clusters, labels):
             clustering_labels[list(c.data_point_ids)] = i + 1
 
         print("Number of clusters: ", len(clusters_in_dim))
-        print("Adjusted Rand index: ", metrics.adjusted_rand_score(labels, clustering_labels))
-        print("Mutual Information: ", metrics.adjusted_mutual_info_score(labels, clustering_labels))
+        print("Adjusted Rand index: ", metrics.adjusted_rand_score(
+            labels, clustering_labels))
+        print("Mutual Information: ", metrics.adjusted_mutual_info_score(
+            labels, clustering_labels))
 
         print("Homogeneity, completeness, V-measure: ",
               metrics.homogeneity_completeness_v_measure(labels, clustering_labels))
 
-        print("Fowlkes-Mallows: ", metrics.fowlkes_mallows_score(labels, clustering_labels))
+        print("Fowlkes-Mallows: ",
+              metrics.fowlkes_mallows_score(labels, clustering_labels))
 
 
 def run_clique(data, xsi, tau):
@@ -209,7 +220,8 @@ def run_clique(data, xsi, tau):
     number_of_features = np.shape(data)[1]
     while (current_dim <= number_of_features) & (len(dense_units) > 0):
         print("\n", str(current_dim), " dimensional clusters:")
-        dense_units = get_dense_units_for_dim(data, dense_units, current_dim, xsi, tau)
+        dense_units = get_dense_units_for_dim(
+            data, dense_units, current_dim, xsi, tau)
         for cluster in get_clusters(dense_units, data, xsi):
             clusters.append(cluster)
         current_dim += 1
@@ -227,17 +239,15 @@ def read_data(delimiter, feature_columns, path):
 
 # Sample run: python Clique.py mouse.csv [0,1] 2 3 0.3 " " output_clusters.txt
 if __name__ == "__main__":
-
     # Clustering with command line parameters
     if len(sys.argv) > 7:
-        file_name = sys.argv[1],
-        feature_columns = map(int, sys.argv[2].strip('[]').split(',')),
-        label_column = int(sys.argv[3]),
-        xsi = int(sys.argv[4]),
-        tau = float(sys.argv[5]),
-        delimiter = sys.argv[6],
+        file_name = sys.argv[1]
+        feature_columns = literal_eval(sys.argv[2])
+        label_column = int(sys.argv[3])
+        xsi = int(sys.argv[4])
+        tau = float(sys.argv[5])
+        delimiter = sys.argv[6]
         output_file = sys.argv[7]
-
     # Sample clustering with default parameters
     else:
         file_name = "mouse.csv"
@@ -248,6 +258,8 @@ if __name__ == "__main__":
         delimiter = ' '
         output_file = "clusters.txt"
 
+    print(sys.argv[4], type(sys.argv[4]))
+    print(sys.argv[5], type(sys.argv[5]))
     print("Running CLIQUE algorithm on " + file_name + " dataset, feature columns = " +
           str(feature_columns) + ", label column = " + str(label_column) + ", xsi = " +
           str(xsi) + ", tau = " + str(tau) + "\n")
@@ -270,6 +282,7 @@ if __name__ == "__main__":
     evaluate_clustering_performance(clusters, labels)
 
     # Visualize clusters
-    title = ("DS: " + file_name + " - Params: Tau=" + str(tau) + " Xsi=" + str(xsi))
+    title = ("DS: " + file_name + " - Params: Tau=" +
+             str(tau) + " Xsi=" + str(xsi))
     if len(feature_columns) <= 2:
         plot_clusters(data, clusters, title, xsi)
