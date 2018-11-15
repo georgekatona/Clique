@@ -7,6 +7,8 @@ import scipy.sparse.csgraph
 from Cluster import Cluster
 from sklearn import metrics
 
+from Visualization import plot_clusters
+
 
 # Inserts joined item into candidates list only if its dimensionality fits
 def insert_if_join_condition(candidates, item, item2, current_dim):
@@ -44,8 +46,6 @@ def self_join(prev_dim_dense_units, dim):
 
 
 def is_data_in_projection(tuple, candidate, xsi):
-    # print("tuple: ", tuple)
-    # print("candidate: ", candidate)
     for dim in candidate:
         element = tuple[dim[0]]
         if int(element * xsi % xsi) != dim[1]:
@@ -160,12 +160,13 @@ def get_one_dim_dense_units(data, tau, xsi):
     return one_dim_dense_units
 
 
+# Normalize data in all features (1e-5 padding is added because clustering works on [0,1) interval)
 def normalize_features(data):
     normalized_data = data
     number_of_features = np.shape(normalized_data)[1]
     for f in range(number_of_features):
-        normalized_data[:, f] -= min(normalized_data[:, f])
-        normalized_data[:, f] *= 1 / max(normalized_data[:, f])
+        normalized_data[:, f] -= min(normalized_data[:, f]) - 1e-5
+        normalized_data[:, f] *= 1 / (max(normalized_data[:, f]) + 1e-5)
     return normalized_data
 
 
@@ -196,19 +197,7 @@ def evaluate_clustering_performance(clusters, labels):
         print("Fowlkes-Mallows: ", metrics.fowlkes_mallows_score(labels, clustering_labels))
 
 
-def run_clique(file_name, feature_columns, label_column, xsi, tau, delimiter, output_file="clusters.txt"):
-    print("Running CLIQUE algorithm on " + file_name + " dataset, feature columns = " +
-          str(feature_columns) + ", label column = " + str(label_column) + ", xsi = " +
-          str(xsi) + ", tau = " + str(tau) + "\n")
-
-    # Read in data with labels
-    path = os.path.join(os.path.abspath(os.path.dirname(__file__)), file_name)
-    original_data = np.genfromtxt(path, dtype=float, delimiter=delimiter, usecols=feature_columns)
-    labels = np.genfromtxt(path, dtype="U10", delimiter=delimiter, usecols=[label_column])
-
-    # Normalize each dimension to the [0,1] range
-    data = normalize_features(original_data)
-
+def run_clique(data, xsi, tau):
     # Finding 1 dimensional dense units
     dense_units = get_one_dim_dense_units(data, tau, xsi)
 
@@ -225,23 +214,62 @@ def run_clique(file_name, feature_columns, label_column, xsi, tau, delimiter, ou
             clusters.append(cluster)
         current_dim += 1
 
+    return clusters
+
+
+def read_labels(delimiter, label_column, path):
+    return np.genfromtxt(path, dtype="U10", delimiter=delimiter, usecols=[label_column])
+
+
+def read_data(delimiter, feature_columns, path):
+    return np.genfromtxt(path, dtype=float, delimiter=delimiter, usecols=feature_columns)
+
+
+# Sample run: python Clique.py mouse.csv [0,1] 2 3 0.3 " " output_clusters.txt
+if __name__ == "__main__":
+
+    # Clustering with command line parameters
+    if len(sys.argv) > 7:
+        file_name = sys.argv[1],
+        feature_columns = map(int, sys.argv[2].strip('[]').split(',')),
+        label_column = int(sys.argv[3]),
+        xsi = int(sys.argv[4]),
+        tau = float(sys.argv[5]),
+        delimiter = sys.argv[6],
+        output_file = sys.argv[7]
+
+    # Sample clustering with default parameters
+    else:
+        file_name = "mouse.csv"
+        feature_columns = [0, 1]
+        label_column = 2
+        xsi = 3
+        tau = 0.1
+        delimiter = ' '
+        output_file = "clusters.txt"
+
+    print("Running CLIQUE algorithm on " + file_name + " dataset, feature columns = " +
+          str(feature_columns) + ", label column = " + str(label_column) + ", xsi = " +
+          str(xsi) + ", tau = " + str(tau) + "\n")
+
+    # Read in data with labels
+    path = os.path.join(os.path.abspath(os.path.dirname(__file__)), file_name)
+    original_data = read_data(delimiter, feature_columns, path)
+    labels = read_labels(delimiter, label_column, path)
+
+    # Normalize each dimension to the [0,1] range
+    data = normalize_features(original_data)
+
+    clusters = run_clique(data=data,
+                          xsi=xsi,
+                          tau=tau)
     save_to_file(clusters, output_file)
     print("\nClusters exported to " + output_file)
 
+    # Evaluate results
     evaluate_clustering_performance(clusters, labels)
 
-
-if __name__ == "__main__":
-    # Sample run: python Clique.py mouse.csv [0,1] 2 3 0.3 " " output_clusters.txt
-
-    if len(sys.argv) > 7:
-        run_clique(file_name=sys.argv[1], feature_columns=map(int, sys.argv[2].strip('[]').split(',')),
-                   label_column=int(sys.argv[3]), xsi=int(sys.argv[4]), tau=float(sys.argv[5]), delimiter=sys.argv[6],
-                   output_file=sys.argv[7])
-    elif len(sys.argv) > 6:
-        run_clique(file_name=sys.argv[1], feature_columns=map(int, sys.argv[2].strip('[]').split(',')),
-                   label_column=int(sys.argv[3]), xsi=int(sys.argv[4]), tau=float(sys.argv[5]), delimiter=sys.argv[6])
-    else:
-        # Running with default parameters and data set
-        run_clique("mouse.csv", [0, 1], 2, 3, 0.1, ' ')
-        # run_clique("data_banknote_authentication.txt", [0, 1, 2, 3], 4, 5, 0.1, ",", "bank.txt")
+    # Visualize clusters
+    title = ("DS: " + file_name + " - Params: Tau=" + str(tau) + " Xsi=" + str(xsi))
+    if len(feature_columns) <= 2:
+        plot_clusters(data, clusters, title, xsi)

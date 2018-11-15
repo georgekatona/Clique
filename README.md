@@ -90,7 +90,7 @@ Running the script without parameters runs a default clustering on one of datase
 - 3                     - xsi parameter for CLIQUE
 - 0.3                   - tau parameter for CLIQUE
 - " "                   - separator used in csv
-- output_clusters.txt   - [optional] output file name (default = clusters.txt)
+- output_clusters.txt   - output file name
 
 # Evaluating results
 
