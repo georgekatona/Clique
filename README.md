@@ -40,7 +40,7 @@ clique(data, xsi, tau){
         
         # Finding k > 1 dimensional dense units
         Dk = Ck[have all (k-1) projection in D(k-1)]
-í    }
+    }
 
     # Finding clusters
     for(all feature set f={F1,F2,...,Fk} containing dense units){
