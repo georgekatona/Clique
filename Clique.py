@@ -258,8 +258,6 @@ if __name__ == "__main__":
         delimiter = ' '
         output_file = "clusters.txt"
 
-    print(sys.argv[4], type(sys.argv[4]))
-    print(sys.argv[5], type(sys.argv[5]))
     print("Running CLIQUE algorithm on " + file_name + " dataset, feature columns = " +
           str(feature_columns) + ", label column = " + str(label_column) + ", xsi = " +
           str(xsi) + ", tau = " + str(tau) + "\n")
