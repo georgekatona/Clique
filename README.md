@@ -64,7 +64,8 @@ clique(data, xsi, tau){
 The implementation is in Python language, all additional libraries used are listed in requirements.txt. To install them in an environment, use the following command:
 
 pip install -r requirements.txt
-3.2 Running the code
+
+### Running the code
 
 #### Windows
 
