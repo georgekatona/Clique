@@ -13,29 +13,26 @@ from Visualization import plot_clusters
 
 # Inserts joined item into candidates list only if its dimensionality fits
 def insert_if_join_condition(candidates, item, item2, current_dim):
-    joined = []
-    for i in range(len(item)):
-        joined.append(item[i])
-    for i in range(len(item2)):
-        joined.append(item2[i])
-
-    # Count number of dimensions
-    dims = set()
-    for i in range(len(joined)):
-        dims.add(int(joined[i][0]))
-
-    # Insert if it fits
-    if len(dims) == current_dim:
+    joined = item.copy()
+    joined.update(item2)
+    if (len(joined.keys()) == current_dim) & (not candidates.__contains__(joined)):
         candidates.append(joined)
 
 
-# Prune all candidates, which has a (k-1) dimensional projection not in (k-1) dim dense units
+# Prune all candidates, which have a (k-1) dimensional projection not in (k-1) dim dense units
 def prune(candidates, prev_dim_dense_units):
-    for i in range(len(candidates)):
-        for j in range(len(candidates[i])):
-            if not prev_dim_dense_units.__contains__([candidates[i][j]]):
-                candidates.remove(candidates[i])
-                break
+    for c in candidates:
+        if not subdims_included(c, prev_dim_dense_units):
+            candidates.remove(c)
+
+
+def subdims_included(candidate, prev_dim_dense_units):
+    for feature in candidate:
+        projection = candidate.copy()
+        projection.pop(feature)
+        if not prev_dim_dense_units.__contains__(projection):
+            return False
+    return True
 
 
 def self_join(prev_dim_dense_units, dim):
@@ -48,9 +45,9 @@ def self_join(prev_dim_dense_units, dim):
 
 
 def is_data_in_projection(tuple, candidate, xsi):
-    for dim in candidate:
-        element = tuple[dim[0]]
-        if int(element * xsi % xsi) != dim[1]:
+    for feature_index, range_index in candidate.items():
+        feature_value = tuple[feature_index]
+        if int(feature_value * xsi % xsi) != range_index:
             return False
     return True
 
@@ -86,12 +83,14 @@ def get_edge(node1, node2):
     dim = len(node1)
     distance = 0
 
-    for i in range(dim):
-        if node1[i][0] != node2[i][0]:
-            return 0
-        distance += abs(node1[i][1] - node2[i][1])
+    if node1.keys() != node2.keys():
+        return 0
+
+    for feature in node1.keys():
+        distance += abs(node1[feature] - node2[feature])
         if distance > 1:
             return 0
+
     return 1
 
 
@@ -108,12 +107,10 @@ def get_cluster_data_point_ids(data, cluster_dense_units, xsi):
     point_ids = set()
 
     # Loop through all dense unit
-    for i in range(np.shape(cluster_dense_units)[0]):
+    for u in cluster_dense_units:
         tmp_ids = set(range(np.shape(data)[0]))
         # Loop through all dimensions of dense unit
-        for j in range(np.shape(cluster_dense_units)[1]):
-            feature_index = cluster_dense_units[i][j][0]
-            range_index = cluster_dense_units[i][j][1]
+        for feature_index, range_index in u.items():
             tmp_ids = tmp_ids & set(
                 np.where(np.floor(data[:, feature_index] * xsi % xsi) == range_index)[0])
         point_ids = point_ids | tmp_ids
@@ -136,9 +133,8 @@ def get_clusters(dense_units, data, xsi):
 
         # Get dimensions of the cluster
         dimensions = set()
-        for j in range(len(cluster_dense_units)):
-            for k in range(len(cluster_dense_units[j])):
-                dimensions.add(cluster_dense_units[j][k][0])
+        for u in cluster_dense_units:
+            dimensions.update(u.keys())
 
         # Get points of the cluster
         cluster_data_point_ids = get_cluster_data_point_ids(
@@ -164,7 +160,8 @@ def get_one_dim_dense_units(data, tau, xsi):
     for f in range(number_of_features):
         for unit in range(xsi):
             if is_dense[unit, f]:
-                one_dim_dense_units.append([[f, unit]])
+                dense_unit = dict({f: unit})
+                one_dim_dense_units.append(dense_unit)
     return one_dim_dense_units
 
 
@@ -256,7 +253,7 @@ if __name__ == "__main__":
         xsi = 3
         tau = 0.1
         delimiter = ' '
-        output_file = "clusters.txt"
+        output_file = "output_clusters.txt"
 
     print("Running CLIQUE algorithm on " + file_name + " dataset, feature columns = " +
           str(feature_columns) + ", label column = " + str(label_column) + ", xsi = " +
