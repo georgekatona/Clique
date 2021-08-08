@@ -58,14 +58,14 @@ def get_dense_units_for_dim(data, prev_dim_dense_units, dim, xsi, tau):
 
     # Count number of elements in candidates
     projection = np.zeros(len(candidates))
-    number_of_data_points = np.shape(data)[0]
-    for dataIndex in range(number_of_data_points):
-        for i in range(len(candidates)):
-            if is_data_in_projection(data[dataIndex], candidates[i], xsi):
+    for data_point in data:
+        for i, candidate in enumerate(candidates):
+            if is_data_in_projection(data_point, candidate, xsi):
                 projection[i] += 1
     print("projection: ", projection)
 
     # Return elements above density threshold
+    number_of_data_points = np.shape(data)[0]
     is_dense = projection > tau * number_of_data_points
     print("is_dense: ", is_dense)
     return np.array(candidates)[is_dense]
